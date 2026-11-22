@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plätzchen-Wettbewerb</title>
+<meta name="theme-color" content="#7a2e1d">
+<style>
+/* ======================================================================
+   Plätzchenbackwettbewerb – Bewertung am Handy, Sieger wird berechnet.
+   Anpassen: nur den Block KONFIGURATION im <script> unten ändern.
+   ====================================================================== */
+:root{
+  --bg:#fbf6ef; --card:#ffffff; --ink:#2b1d16; --muted:#7c6a5f; --line:#eadfd3;
+  --accent:#7a2e1d; --accent-ink:#fff; --soft:#f4e7da; --ok:#2f6b3a; --warn:#a4461d;
+  --gold:#c9972b; --silver:#9aa3ad; --bronze:#a8683a;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1512; --card:#26201c; --ink:#f3e9df; --muted:#b3a294; --line:#3a312b;
+    --accent:#e0825f; --accent-ink:#1b1512; --soft:#33291f; --ok:#7cc48a; --warn:#f0a07a;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:0 16px calc(90px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+main{max-width:640px;margin:0 auto}
+header{max-width:640px;margin:0 auto;padding:22px 0 8px}
+h1{font-size:1.5rem;margin:0;line-height:1.2}
+.sub{color:var(--muted);margin:4px 0 0;font-size:.95rem}
+h2{font-size:1.15rem;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+label.f{display:block;font-weight:600;margin:0 0 6px}
+input[type=text],select{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.crit{margin:14px 0 0}
+.crit-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.95rem}
+.crit-h span:last-child{color:var(--muted);font-size:.85rem}
+.scale{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:4px;margin-top:6px}
+.scale button{font:inherit;font-weight:600;padding:10px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+.scale button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.scale button.in{background:var(--soft)}
+.ends{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem;margin-top:2px}
+.sort-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:.75rem;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.badge.done{background:var(--ok);color:#fff}
+.skip{color:var(--muted);font-style:italic;margin-top:8px}
+.btn{display:block;width:100%;font:inherit;font-weight:700;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5}
+.btn.sec{background:var(--soft);color:var(--ink)}
+.msg{margin:10px 0 0;font-size:.95rem}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--warn)}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;font:inherit;font-weight:600;padding:14px 0;border:0;background:none;color:var(--muted)}
+nav button.on{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
+.hidden{display:none}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;margin:8px 0 4px;text-align:center}
+.pod{border-radius:12px 12px 4px 4px;padding:10px 6px;color:#fff;min-width:0}
+.pod b{display:block;font-size:1.6rem;line-height:1}
+.pod .n{display:block;font-weight:700;font-size:.9rem;margin-top:6px;overflow-wrap:anywhere}
+.pod .s{display:block;font-size:.8rem;opacity:.9}
+.p1{background:var(--gold);min-height:150px}.p2{background:var(--silver);min-height:120px}.p3{background:var(--bronze);min-height:100px}
+.winner{text-align:center;font-size:1.1rem;margin:4px 0 0}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.8rem}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{height:6px;background:var(--soft);border-radius:3px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.small{font-size:.85rem;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips span{background:var(--soft);padding:4px 10px;border-radius:999px;font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">🍪 Plätzchen-Wettbewerb</h1>
+  <p class="sub" id="subtitle"></p>
+</header>
+
+<main>
+  <!-- ============ BEWERTEN ============ -->
+  <section id="view-vote">
+    <div class="card">
+      <label class="f" for="name">Dein Name</label>
+      <input type="text" id="name" autocomplete="given-name" placeholder="z. B. Oma Hilde" maxlength="40">
+      <div id="own-wrap" class="hidden" style="margin-top:12px">
+        <label class="f" for="own">Meine eigene Sorte <span class="small">(wird nicht von dir bewertet)</span></label>
+        <select id="own"></select>
+      </div>
+    </div>
+    <div id="sorts"></div>
+    <button class="btn" id="submit">Bewertung abschicken</button>
+    <p class="msg" id="submit-msg"></p>
+    <p class="small">Du kannst jederzeit nachbessern und erneut abschicken – es zählt immer deine letzte Bewertung.</p>
+  </section>
+
+  <!-- ============ ERGEBNIS ============ -->
+  <section id="view-result" class="hidden">
+    <div id="result"></div>
+    <button class="btn sec" id="reload" style="margin-top:14px">Aktualisieren</button>
+    <p class="small" id="result-meta"></p>
+  </section>
+</main>
+
+<nav>
+  <button id="tab-vote" class="on">✍️ Bewerten</button>
+  <button id="tab-result">🏆 Ergebnis</button>
+</nav>
+
+<script>
+/* ======================================================================
+   KONFIGURATION – hier anpassen
+   ====================================================================== */
+const CONFIG = {
+  titel: "🍪 Plätzchen-Wettbewerb 2026",
+  untertitel: "Bewerte jede Sorte – der Sieger wird automatisch berechnet.",
+
+  // Die Sorten. "baecker" ist optional (nur zur Anzeige im Ergebnis).
+  sorten: [
+    { name: "Vanillekipferl",  baecker: "" },
+    { name: "Zimtsterne",      baecker: "" },
+    { name: "Spitzbuben",      baecker: "" },
+    { name: "Kokosmakronen",   baecker: "" },
+    { name: "Lebkuchen",       baecker: "" },
+  ],
+
+  // Kriterien mit Gewichtung (höher = wichtiger).
+  kriterien: [
+    { name: "Geschmack",       gewicht: 3, hinweis: "Wie lecker?" },
+    { name: "Konsistenz",      gewicht: 2, hinweis: "Mürbe, saftig, knusprig – passend?" },
+    { name: "Aussehen",        gewicht: 1, hinweis: "Optik & Verzierung" },
+    { name: "Weihnachtsgefühl",gewicht: 1, hinweis: "Wie sehr nach Weihnachten?" },
+  ],
+
+  skalaMin: 1,
+  skalaMax: 10,
+
+  // Darf man die eigene Sorte bewerten? false = Auswahl "Meine eigene Sorte" wird angezeigt.
+  eigeneSorteBewertbar: false,
+
+  // Speicherort der Stimmen: ntfy.sh-Kanal. Für jeden Wettbewerb einen
+  // EIGENEN, schwer erratbaren Namen wählen (nur a-z, 0-9, -, _).
+  // Alternativ per Link überschreiben: .../index.html?kanal=meinname
+  // Hinweis: ntfy.sh speichert Nachrichten ca. 12 Stunden.
+  kanal: "plaetzchen-2026-f8tglr1jt3",
+};
+/* ====================================================================== */
+
+const KANAL = (new URLSearchParams(location.search).get("kanal") || CONFIG.kanal).replace(/[^\w-]/g, "");
+const API = "https://ntfy.sh/" + KANAL;
+const VERSION = "pbw1";
+const LS = "pbw:" + KANAL;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = x => x.toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const normName = n => n.trim().replace(/\s+/g, " ").toLowerCase();
+
+$("#title").textContent = CONFIG.titel;
+$("#subtitle").textContent = CONFIG.untertitel;
+document.title = CONFIG.titel.replace(/^\W+/, "");
+
+/* ---------- Entwurf (lokal) ---------- */
+let state = { name: "", own: "", ratings: {} };   // ratings[sorteIdx][kritIdx] = wert
+try { Object.assign(state, JSON.parse(localStorage.getItem(LS) || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} };
+
+/* ---------- Bewertungsformular ---------- */
+const nameEl = $("#name"), ownEl = $("#own");
+nameEl.value = state.name || "";
+nameEl.addEventListener("input", () => { state.name = nameEl.value; save(); });
+
+if (!CONFIG.eigeneSorteBewertbar) {
+  $("#own-wrap").classList.remove("hidden");
+  ownEl.innerHTML = '<option value="">– ich habe nicht gebacken –</option>' +
+    CONFIG.sorten.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
+  ownEl.value = state.own ?? "";
+  ownEl.addEventListener("change", () => { state.own = ownEl.value; save(); renderSorts(); });
+}
+
+function isOwn(i) { return !CONFIG.eigeneSorteBewertbar && state.own !== "" && Number(state.own) === i; }
+function sortComplete(i) {
+  const r = state.ratings[i] || {};
+  return CONFIG.kriterien.every((_, k) => r[k] != null);
+}
+
+function renderSorts() {
+  const n = CONFIG.skalaMax - CONFIG.skalaMin + 1;
+  $("#sorts").innerHTML = CONFIG.sorten.map((s, i) => {
+    const head = `<div class="sort-h"><h2>${esc(s.name)}</h2>
+      <span class="badge ${isOwn(i) ? "" : sortComplete(i) ? "done" : ""}" id="b${i}">${isOwn(i) ? "eigene" : sortComplete(i) ? "✓ fertig" : "offen"}</span></div>`;
+    if (isOwn(i)) return `<div class="card">${head}<p class="skip">Deine eigene Sorte – wird von dir nicht bewertet.</p></div>`;
+    const crits = CONFIG.kriterien.map((c, k) => {
+      const v = state.ratings[i]?.[k];
+      let btns = "";
+      for (let x = CONFIG.skalaMin; x <= CONFIG.skalaMax; x++)
+        btns += `<button type="button" data-s="${i}" data-k="${k}" data-v="${x}" class="${v === x ? "on" : v != null && x < v ? "in" : ""}">${x}</button>`;
+      return `<div class="crit"><div class="crit-h"><span><b>${esc(c.name)}</b>${c.hinweis ? " · " + esc(c.hinweis) : ""}</span><span>×${c.gewicht}</span></div>
+        <div class="scale" style="--n:${n}">${btns}</div>
+        <div class="ends"><span>schwach</span><span>top</span></div></div>`;
+    }).join("");
+    return `<div class="card">${head}${crits}</div>`;
+  }).join("");
+}
+
+$("#sorts").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  const i = +b.dataset.s, k = +b.dataset.k, v = +b.dataset.v;
+  (state.ratings[i] ||= {})[k] = v;
+  save();
+  b.parentElement.querySelectorAll("button").forEach(x => {
+    const xv = +x.dataset.v; x.className = xv === v ? "on" : xv < v ? "in" : "";
+  });
+  const badge = $("#b" + i);
+  if (sortComplete(i)) { badge.textContent = "✓ fertig"; badge.className = "badge done"; }
+});
+
+renderSorts();
+
+/* ---------- Abschicken ---------- */
+$("#submit").addEventListener("click", async () => {
+  const msg = $("#submit-msg"); msg.className = "msg";
+  const name = nameEl.value.trim().replace(/\s+/g, " ");
+  if (!name) { msg.className = "msg err"; msg.textContent = "Bitte zuerst deinen Namen eintragen."; nameEl.focus(); return; }
+  const missing = CONFIG.sorten.map((s, i) => i).filter(i => !isOwn(i) && !sortComplete(i));
+  if (missing.length) {
+    msg.className = "msg err";
+    msg.textContent = "Noch nicht vollständig bewertet: " + missing.map(i => CONFIG.sorten[i].name).join(", ");
+    return;
+  }
+  const ratings = {};
+  CONFIG.sorten.forEach((s, i) => { if (!isOwn(i)) ratings[s.name] = CONFIG.kriterien.map((c, k) => state.ratings[i][k]); });
+  const payload = { v: VERSION, name, ratings, ts: Date.now() };
+  const btn = $("#submit"); btn.disabled = true; btn.textContent = "Wird gesendet …";
+  try {
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    msg.className = "msg ok"; msg.textContent = `Danke, ${name}! Deine Bewertung ist gespeichert. 🎄`;
+  } catch (err) {
+    msg.className = "msg err"; msg.textContent = "Senden fehlgeschlagen (" + err.message + "). Internetverbindung prüfen und nochmal versuchen.";
+  } finally { btn.disabled = false; btn.textContent = "Bewertung abschicken"; }
+});
+
+/* ---------- Ergebnis berechnen ---------- */
+async function loadVotes() {
+  const r = await fetch(API + "/json?poll=1&since=all", { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const latest = new Map();                       // pro Name zählt die letzte Abgabe
+  for (const line of (await r.text()).split("\n")) {
+    if (!line.trim()) continue;
+    let ev, p;
+    try { ev = JSON.parse(line); if (ev.event !== "message") continue; p = JSON.parse(ev.message); } catch (e) { continue; }
+    if (p?.v !== VERSION || typeof p.name !== "string" || !p.name.trim() || typeof p.ratings !== "object") continue;
+    p.ts = ev.time * 1000 || p.ts;
+    const key = normName(p.name);
+    if (!latest.has(key) || latest.get(key).ts <= p.ts) latest.set(key, p);
+  }
+  return [...latest.values()];
+}
+
+function compute(votes) {
+  const W = CONFIG.kriterien.reduce((a, c) => a + c.gewicht, 0);
+  const valid = v => Number.isFinite(v) && v >= CONFIG.skalaMin && v <= CONFIG.skalaMax;
+  return CONFIG.sorten.map(s => {
+    const per = [];                                   // gewichteter Schnitt je Bewerter
+    const critSum = CONFIG.kriterien.map(() => 0);
+    for (const vote of votes) {
+      const arr = vote.ratings[s.name];
+      if (!Array.isArray(arr) || arr.length !== CONFIG.kriterien.length || !arr.every(valid)) continue;
+      per.push(arr.reduce((a, x, k) => a + x * CONFIG.kriterien[k].gewicht, 0) / W);
+      arr.forEach((x, k) => critSum[k] += x);
+    }
+    const n = per.length;
+    return {
+      ...s, n,
+      score: n ? per.reduce((a, b) => a + b, 0) / n : null,
+      crit: critSum.map(x => n ? x / n : null),
+    };
+  }).sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || b.n - a.n);
+}
+
+function renderResult(votes) {
+  const res = compute(votes);
+  const ranked = res.filter(r => r.n);
+  const box = $("#result");
+  if (!votes.length || !ranked.length) {
+    box.innerHTML = `<div class="card"><h2>Noch keine Bewertungen</h2><p class="small">Sobald jemand abgestimmt hat, erscheint hier die Rangliste.</p></div>`;
+    return;
+  }
+  // Platzierung mit Gleichstand
+  let place = 0, prev = null;
+  ranked.forEach((r, i) => { const s = Math.round(r.score * 100); if (s !== prev) place = i + 1; r.place = place; prev = s; });
+  const winners = ranked.filter(r => r.place === 1);
+  const pod = [ranked[1], ranked[0], ranked[2]];
+  const cls = ["p2", "p1", "p3"], medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const podium = pod.map((r, j) => r
+    ? `<div class="pod ${cls[j]}"><b>${medal[r.place] || r.place + "."}</b><span class="n">${esc(r.name)}</span><span class="s">${fmt(r.score)}</span></div>`
+    : `<div></div>`).join("");
+  const max = CONFIG.skalaMax;
+  const rows = res.map(r => `<tr><td class="num">${r.place ? r.place + "." : "–"}</td>
+      <td><b>${esc(r.name)}</b>${r.baecker ? `<br><span class="small">von ${esc(r.baecker)}</span>` : ""}
+      ${r.score != null ? `<div class="bar"><i style="width:${(r.score / max) * 100}%"></i></div>` : ""}</td>
+      <td class="num"><b>${r.score != null ? fmt(r.score) : "–"}</b><br><span class="small">${r.n} Stimme${r.n === 1 ? "" : "n"}</span></td></tr>`).join("");
+  const critHead = CONFIG.kriterien.map(c => `<th class="num">${esc(c.name)}</th>`).join("");
+  const critRows = res.map(r => `<tr><td>${esc(r.name)}</td>${r.crit.map(x => `<td class="num">${x != null ? fmt(x) : "–"}</td>`).join("")}</tr>`).join("");
+  const critBest = CONFIG.kriterien.map((c, k) => {
+    const best = res.filter(r => r.crit[k] != null).sort((a, b) => b.crit[k] - a.crit[k])[0];
+    return best ? `<span>${esc(c.name)}: <b>${esc(best.name)}</b></span>` : "";
+  }).join("");
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="podium">${podium}</div>
+      <p class="winner">${winners.length > 1 ? "Gleichstand! Sieger: " : "Sieger: "}<b>${winners.map(w => esc(w.name)).join(" & ")}</b> 🎉</p>
+    </div>
+    <div class="card"><h2>Rangliste</h2>
+      <table><thead><tr><th class="num">#</th><th>Sorte</th><th class="num">Punkte (Ø, max. ${max})</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <div class="card"><h2>Bestnoten je Kriterium</h2><div class="chips">${critBest}</div>
+      <div class="scroll" style="margin-top:12px"><table><thead><tr><th>Sorte</th>${critHead}</tr></thead><tbody>${critRows}</tbody></table></div>
+      <p class="small">Gesamtpunkte = gewichteter Durchschnitt (${CONFIG.kriterien.map(c => esc(c.name) + " ×" + c.gewicht).join(", ")}), gemittelt über alle Bewerter.</p>
+    </div>
+    <div class="card"><h2>Abgestimmt haben (${votes.length})</h2>
+      <div class="chips">${votes.sort((a, b) => a.name.localeCompare(b.name, "de")).map(v => `<span>${esc(v.name)}</span>`).join("")}</div>
+    </div>`;
+}
+
+let timer = null;
+async function refresh() {
+  const meta = $("#result-meta");
+  try {
+    const votes = await loadVotes();
+    renderResult(votes);
+    meta.textContent = "Stand: " + new Date().toLocaleTimeString("de-DE") + " · aktualisiert automatisch alle 15 s";
+  } catch (err) {
+    meta.textContent = "Ergebnisse konnten nicht geladen werden (" + err.message + ").";
+  }
+}
+$("#reload").addEventListener("click", refresh);
+
+/* ---------- Tabs ---------- */
+function show(view) {
+  const vote = view === "vote";
+  $("#view-vote").classList.toggle("hidden", !vote);
+  $("#view-result").classList.toggle("hidden", vote);
+  $("#tab-vote").classList.toggle("on", vote);
+  $("#tab-result").classList.toggle("on", !vote);
+  clearInterval(timer);
+  if (!vote) { refresh(); timer = setInterval(refresh, 15000); }
+  scrollTo(0, 0);
+  history.replaceState(null, "", vote ? location.pathname + location.search : "#ergebnis");
+}
+$("#tab-vote").addEventListener("click", () => show("vote"));
+$("#tab-result").addEventListener("click", () => show("result"));
+if (location.hash === "#ergebnis") show("result");
+</script>
+</body>
+</html>
