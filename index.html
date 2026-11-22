@@ -7,8 +7,11 @@
 <meta name="theme-color" content="#7a2e1d">
 <style>
 /* ======================================================================
-   Plätzchenbackwettbewerb – Bewertung am Handy, Sieger wird berechnet.
-   Anpassen: nur den Block KONFIGURATION im <script> unten ändern.
+   Plätzchenbackwettbewerb
+   1. Anmelden: Bäcker tragen ihre Sorte am Handy ein
+   2. Bewerten: alle bewerten jede Sorte (Blindverkostung, Bäcker verdeckt)
+   3. Ergebnis: Leitung drückt "Platzierungen verkünden"
+   Leitungs-Ansicht: Seite mit ?leitung aufrufen.
    ====================================================================== */
 :root{
   --bg:#fbf6ef; --card:#ffffff; --ink:#2b1d16; --muted:#7c6a5f; --line:#eadfd3;
@@ -25,42 +28,49 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   padding:0 16px calc(90px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
-main{max-width:640px;margin:0 auto}
-header{max-width:640px;margin:0 auto;padding:22px 0 8px}
+main,header{max-width:640px;margin:0 auto}
+header{padding:22px 0 8px}
 h1{font-size:1.5rem;margin:0;line-height:1.2}
 .sub{color:var(--muted);margin:4px 0 0;font-size:.95rem}
-h2{font-size:1.15rem;margin:0 0 4px}
+h2{font-size:1.15rem;margin:0 0 6px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.card.lead{border:2px dashed var(--accent)}
 label.f{display:block;font-weight:600;margin:0 0 6px}
-input[type=text],select{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input[type=text]{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);margin-bottom:12px}
 .crit{margin:14px 0 0}
 .crit-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.95rem}
-.crit-h span:last-child{color:var(--muted);font-size:.85rem}
+.crit-h span:last-child{color:var(--muted);font-size:.85rem;white-space:nowrap}
 .scale{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:4px;margin-top:6px}
 .scale button{font:inherit;font-weight:600;padding:10px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
 .scale button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .scale button.in{background:var(--soft)}
 .ends{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem;margin-top:2px}
 .sort-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nr{display:inline-block;min-width:2em;padding:2px 6px;margin-right:6px;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-size:.85rem;text-align:center}
 .badge{font-size:.75rem;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
 .badge.done{background:var(--ok);color:#fff}
-.skip{color:var(--muted);font-style:italic;margin-top:8px}
-.btn{display:block;width:100%;font:inherit;font-weight:700;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink)}
+.skip{color:var(--muted);font-style:italic;margin:8px 0 0}
+.btn{display:block;width:100%;font:inherit;font-weight:700;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);margin-top:4px}
 .btn:disabled{opacity:.5}
 .btn.sec{background:var(--soft);color:var(--ink)}
+.btn.big{font-size:1.15rem;padding:18px}
+.link{font:inherit;font-size:.85rem;border:0;background:none;color:var(--warn);text-decoration:underline;padding:4px 0}
 .msg{margin:10px 0 0;font-size:.95rem}
 .msg.ok{color:var(--ok)} .msg.err{color:var(--warn)}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
-nav button{flex:1;font:inherit;font-weight:600;padding:14px 0;border:0;background:none;color:var(--muted)}
+nav button{flex:1;font:inherit;font-weight:600;font-size:.95rem;padding:14px 0;border:0;background:none;color:var(--muted)}
 nav button.on{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
-.hidden{display:none}
+.hidden{display:none!important}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+ul.list li:last-child{border-bottom:0}
 .podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;margin:8px 0 4px;text-align:center}
 .pod{border-radius:12px 12px 4px 4px;padding:10px 6px;color:#fff;min-width:0}
 .pod b{display:block;font-size:1.6rem;line-height:1}
-.pod .n{display:block;font-weight:700;font-size:.9rem;margin-top:6px;overflow-wrap:anywhere}
-.pod .s{display:block;font-size:.8rem;opacity:.9}
-.p1{background:var(--gold);min-height:150px}.p2{background:var(--silver);min-height:120px}.p3{background:var(--bronze);min-height:100px}
-.winner{text-align:center;font-size:1.1rem;margin:4px 0 0}
+.pod .n{display:block;font-weight:700;font-size:.9rem;margin-top:6px;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+.pod .s{display:block;font-size:.78rem;opacity:.95;overflow-wrap:anywhere}
+.p1{background:var(--gold);min-height:160px}.p2{background:var(--silver);min-height:130px}.p3{background:var(--bronze);min-height:110px}
+.winner{text-align:center;font-size:1.1rem;margin:6px 0 0}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
 th,td{text-align:left;padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:600;font-size:.8rem}
@@ -71,289 +81,401 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 .small{font-size:.85rem;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .chips span{background:var(--soft);padding:4px 10px;border-radius:999px;font-size:.85rem}
+.chips span.ok{background:var(--ok);color:#fff}
+.progress{height:12px;background:var(--soft);border-radius:6px;overflow:hidden;margin:8px 0}
+.progress i{display:block;height:100%;background:var(--ok);transition:width .4s}
+.drum{text-align:center;padding:40px 16px;font-size:1.4rem;font-weight:700}
+.drum .e{font-size:3.5rem;display:block;animation:wob .25s infinite alternate}
+@keyframes wob{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.fade{animation:fade .6s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.phase{display:flex;gap:6px;margin:8px 0 12px}
+.phase span{flex:1;text-align:center;font-size:.78rem;padding:6px 2px;border-radius:8px;background:var(--soft);color:var(--muted)}
+.phase span.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
 </style>
 </head>
 <body>
 <header>
-  <h1 id="title">🍪 Plätzchen-Wettbewerb</h1>
+  <h1 id="title"></h1>
   <p class="sub" id="subtitle"></p>
 </header>
 
 <main>
-  <!-- ============ BEWERTEN ============ -->
-  <section id="view-vote">
-    <div class="card">
-      <label class="f" for="name">Dein Name</label>
-      <input type="text" id="name" autocomplete="given-name" placeholder="z. B. Oma Hilde" maxlength="40">
-      <div id="own-wrap" class="hidden" style="margin-top:12px">
-        <label class="f" for="own">Meine eigene Sorte <span class="small">(wird nicht von dir bewertet)</span></label>
-        <select id="own"></select>
+  <p class="msg err hidden" id="net"></p>
+
+  <!-- ============ ANMELDEN ============ -->
+  <section id="view-reg" class="hidden">
+    <div id="reg-open">
+      <div class="card">
+        <h2>Plätzchen anmelden</h2>
+        <label class="f" for="reg-baker">Dein Name</label>
+        <input type="text" id="reg-baker" maxlength="40" placeholder="z. B. Oma Hilde" autocomplete="given-name">
+        <label class="f" for="reg-sort">Name der Sorte</label>
+        <input type="text" id="reg-sort" maxlength="50" placeholder="z. B. Vanillekipferl">
+        <button class="btn" id="reg-btn">Anmelden</button>
+        <p class="msg" id="reg-msg"></p>
       </div>
     </div>
-    <div id="sorts"></div>
-    <button class="btn" id="submit">Bewertung abschicken</button>
-    <p class="msg" id="submit-msg"></p>
-    <p class="small">Du kannst jederzeit nachbessern und erneut abschicken – es zählt immer deine letzte Bewertung.</p>
+    <div class="card hidden" id="reg-closed"><h2>Anmeldung geschlossen</h2><p class="small" style="margin:0">Die Verkostung läuft bereits.</p></div>
+    <div class="card"><h2 id="reg-count">Angemeldete Sorten</h2><ul class="list" id="reg-list"></ul>
+      <p class="small" id="reg-hint">Die Bäcker bleiben bis zur Siegerehrung geheim (Blindverkostung).</p></div>
+  </section>
+
+  <!-- ============ BEWERTEN ============ -->
+  <section id="view-vote" class="hidden">
+    <div class="card hidden" id="vote-wait"></div>
+    <div id="vote-open">
+      <div class="card">
+        <label class="f" for="name">Dein Name</label>
+        <input type="text" id="name" list="bakers" maxlength="40" placeholder="z. B. Oma Hilde" autocomplete="given-name" style="margin:0">
+        <datalist id="bakers"></datalist>
+        <p class="small" id="name-hint" style="margin:6px 0 0">Bäcker: Bitte genau den Namen der Anmeldung verwenden, dann wird die eigene Sorte übersprungen.</p>
+      </div>
+      <div id="sorts"></div>
+      <button class="btn" id="submit">Bewertung abschicken</button>
+      <p class="msg" id="submit-msg"></p>
+      <p class="small">Du kannst nachbessern und erneut abschicken. Es zählt immer deine letzte Bewertung.</p>
+    </div>
   </section>
 
   <!-- ============ ERGEBNIS ============ -->
   <section id="view-result" class="hidden">
+    <div class="card lead hidden" id="lead"></div>
     <div id="result"></div>
-    <button class="btn sec" id="reload" style="margin-top:14px">Aktualisieren</button>
-    <p class="small" id="result-meta"></p>
+    <p class="small" id="meta"></p>
   </section>
 </main>
 
 <nav>
-  <button id="tab-vote" class="on">✍️ Bewerten</button>
-  <button id="tab-result">🏆 Ergebnis</button>
+  <button data-view="reg">📝 Anmelden</button>
+  <button data-view="vote">✍️ Bewerten</button>
+  <button data-view="result">🏆 Ergebnis</button>
 </nav>
 
 <script>
 /* ======================================================================
-   KONFIGURATION – hier anpassen
+   KONFIGURATION
    ====================================================================== */
 const CONFIG = {
   titel: "🍪 Plätzchen-Wettbewerb 2026",
-  untertitel: "Bewerte jede Sorte – der Sieger wird automatisch berechnet.",
+  untertitel: "Anmelden, verkosten, bewerten – der Sieger wird berechnet.",
 
-  // Die Sorten. "baecker" ist optional (nur zur Anzeige im Ergebnis).
-  sorten: [
-    { name: "Vanillekipferl",  baecker: "" },
-    { name: "Zimtsterne",      baecker: "" },
-    { name: "Spitzbuben",      baecker: "" },
-    { name: "Kokosmakronen",   baecker: "" },
-    { name: "Lebkuchen",       baecker: "" },
-  ],
-
-  // Kriterien mit Gewichtung (höher = wichtiger).
+  // Bewertungskriterien mit Gewichtung (höher = wichtiger)
   kriterien: [
-    { name: "Geschmack",       gewicht: 3, hinweis: "Wie lecker?" },
-    { name: "Konsistenz",      gewicht: 2, hinweis: "Mürbe, saftig, knusprig – passend?" },
-    { name: "Aussehen",        gewicht: 1, hinweis: "Optik & Verzierung" },
-    { name: "Weihnachtsgefühl",gewicht: 1, hinweis: "Wie sehr nach Weihnachten?" },
+    { name: "Geschmack",   gewicht: 4, hinweis: "Wie lecker ist es?" },
+    { name: "Textur",      gewicht: 2, hinweis: "Mürbe, saftig, knusprig – passt es?" },
+    { name: "Aussehen",    gewicht: 1, hinweis: "Form, Farbe, Verzierung" },
+    { name: "Originalität",gewicht: 1, hinweis: "Besondere Idee oder Note?" },
+    { name: "Nachschlag",  gewicht: 2, hinweis: "Würdest du sofort noch eins nehmen?" },
   ],
-
   skalaMin: 1,
   skalaMax: 10,
 
-  // Darf man die eigene Sorte bewerten? false = Auswahl "Meine eigene Sorte" wird angezeigt.
-  eigeneSorteBewertbar: false,
-
-  // Speicherort der Stimmen: ntfy.sh-Kanal. Für jeden Wettbewerb einen
-  // EIGENEN, schwer erratbaren Namen wählen (nur a-z, 0-9, -, _).
-  // Alternativ per Link überschreiben: .../index.html?kanal=meinname
-  // Hinweis: ntfy.sh speichert Nachrichten ca. 12 Stunden.
+  // ntfy.sh-Kanal: eigener, schwer erratbarer Name (a-z, 0-9, -, _).
+  // Überschreibbar per Link: ?kanal=name   ·   Speicherdauer ca. 12 Stunden!
   kanal: "plaetzchen-2026-f8tglr1jt3",
 };
 /* ====================================================================== */
 
-const KANAL = (new URLSearchParams(location.search).get("kanal") || CONFIG.kanal).replace(/[^\w-]/g, "");
+const params = new URLSearchParams(location.search);
+const KANAL = (params.get("kanal") || CONFIG.kanal).replace(/[^\w-]/g, "");
+const LEITUNG = params.has("leitung");
 const API = "https://ntfy.sh/" + KANAL;
-const VERSION = "pbw1";
-const LS = "pbw:" + KANAL;
+const V = "pbw2";
+const LS = "pbw2:" + KANAL;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = x => x.toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const normName = n => n.trim().replace(/\s+/g, " ").toLowerCase();
+const clean = n => String(n || "").trim().replace(/\s+/g, " ");
+const norm = n => clean(n).toLowerCase();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const K = CONFIG.kriterien;
 
-$("#title").textContent = CONFIG.titel;
+$("#title").textContent = CONFIG.titel + (LEITUNG ? " · Leitung" : "");
 $("#subtitle").textContent = CONFIG.untertitel;
 document.title = CONFIG.titel.replace(/^\W+/, "");
 
-/* ---------- Entwurf (lokal) ---------- */
-let state = { name: "", own: "", ratings: {} };   // ratings[sorteIdx][kritIdx] = wert
-try { Object.assign(state, JSON.parse(localStorage.getItem(LS) || "{}")); } catch (e) {}
-const save = () => { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} };
+/* ---------- lokaler Zustand (nur dieses Handy) ---------- */
+let me = { name: "", mine: [], ratings: {}, seen: "" };
+try { Object.assign(me, JSON.parse(localStorage.getItem(LS) || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(me)); } catch (e) {} };
 
-/* ---------- Bewertungsformular ---------- */
-const nameEl = $("#name"), ownEl = $("#own");
-nameEl.value = state.name || "";
-nameEl.addEventListener("input", () => { state.name = nameEl.value; save(); });
+/* ---------- gemeinsamer Zustand aus dem Kanal ---------- */
+// Nachrichten: {t:"sorte",id,name,baecker} {t:"weg",id} {t:"phase",p} {t:"stimme",name,ratings:{id:[..]}}
+let G = { phase: "anmeldung", sorts: [], votes: [], revealId: "", loaded: false };
 
-if (!CONFIG.eigeneSorteBewertbar) {
-  $("#own-wrap").classList.remove("hidden");
-  ownEl.innerHTML = '<option value="">– ich habe nicht gebacken –</option>' +
-    CONFIG.sorten.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
-  ownEl.value = state.own ?? "";
-  ownEl.addEventListener("change", () => { state.own = ownEl.value; save(); renderSorts(); });
+async function post(p) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify({ v: V, ...p }) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  await sync();
 }
 
-function isOwn(i) { return !CONFIG.eigeneSorteBewertbar && state.own !== "" && Number(state.own) === i; }
-function sortComplete(i) {
-  const r = state.ratings[i] || {};
-  return CONFIG.kriterien.every((_, k) => r[k] != null);
+async function sync() {
+  let text;
+  try {
+    const r = await fetch(API + "/json?poll=1&since=all", { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    text = await r.text();
+    $("#net").classList.add("hidden");
+  } catch (err) {
+    $("#net").textContent = "Keine Verbindung zum Server (" + err.message + "). Wird erneut versucht …";
+    $("#net").classList.remove("hidden");
+    return;
+  }
+  let phase = "anmeldung", revealId = "", seq = 0;
+  const sorts = new Map(), votes = new Map();
+  for (const line of text.split("\n")) {
+    let ev, p;
+    try { ev = JSON.parse(line); if (ev.event !== "message") continue; p = JSON.parse(ev.message); } catch (e) { continue; }
+    if (!p || p.v !== V) continue;
+    if (p.t === "phase" && ["anmeldung", "verkostung", "ergebnis"].includes(p.p)) {
+      phase = p.p; if (phase === "ergebnis") revealId = ev.id;
+    } else if (p.t === "sorte" && phase === "anmeldung" && p.id && clean(p.name) && clean(p.baecker)) {
+      const old = sorts.get(p.id);
+      sorts.set(p.id, { id: String(p.id), name: clean(p.name), baecker: clean(p.baecker), order: old ? old.order : ++seq });
+    } else if (p.t === "weg" && phase === "anmeldung") {
+      sorts.delete(p.id);
+    } else if (p.t === "stimme" && phase === "verkostung" && clean(p.name) && p.ratings && typeof p.ratings === "object") {
+      votes.set(norm(p.name), { name: clean(p.name), ratings: p.ratings });
+    }
+  }
+  const list = [...sorts.values()].sort((a, b) => a.order - b.order);
+  list.forEach((s, i) => s.nr = i + 1);
+  const sig = JSON.stringify([phase, list.map(s => [s.id, s.name, s.baecker])]);
+  const changed = sig !== G.sig;
+  const first = !G.loaded, phaseChanged = G.loaded && G.phase !== phase;
+  G = { phase, sorts: list, votes: [...votes.values()], revealId, loaded: true, sig };
+  if (first || phaseChanged) show(LEITUNG || phase === "ergebnis" ? "result" : phase === "anmeldung" ? "reg" : "vote");
+  else render(changed);
 }
 
-function renderSorts() {
+/* ---------- Ansichten ---------- */
+let view = "";
+function show(v) {
+  view = v;
+  ["reg", "vote", "result"].forEach(x => $("#view-" + x).classList.toggle("hidden", x !== v));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+  scrollTo(0, 0);
+  render(true);
+}
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+
+function render(full) {
+  if (!G.loaded) return;
+  if (view === "reg") renderReg();
+  if (view === "vote") renderVote(full);
+  if (view === "result") renderResult();
+  $("#meta").textContent = "Stand: " + new Date().toLocaleTimeString("de-DE") + " · aktualisiert automatisch";
+}
+
+/* ---------- 1. Anmelden ---------- */
+$("#reg-baker").value = me.name || "";
+$("#reg-btn").addEventListener("click", async () => {
+  const baecker = clean($("#reg-baker").value), name = clean($("#reg-sort").value), msg = $("#reg-msg");
+  msg.className = "msg err";
+  if (!baecker || !name) { msg.textContent = "Bitte deinen Namen und die Sorte eintragen."; return; }
+  if (G.sorts.some(s => norm(s.name) === norm(name))) { msg.textContent = "Diese Sorte ist schon angemeldet – bitte unterscheidbar benennen."; return; }
+  const btn = $("#reg-btn"); btn.disabled = true;
+  try {
+    const id = uid();
+    me.name = baecker; me.mine.push(id); save();
+    await post({ t: "sorte", id, name, baecker });
+    $("#reg-sort").value = "";
+    msg.className = "msg ok"; msg.textContent = `„${name}“ ist angemeldet. 🎄`;
+  } catch (err) { msg.textContent = "Fehlgeschlagen (" + err.message + "). Bitte nochmal versuchen."; }
+  btn.disabled = false;
+});
+
+function renderReg() {
+  const open = G.phase === "anmeldung";
+  $("#reg-open").classList.toggle("hidden", !open);
+  $("#reg-closed").classList.toggle("hidden", open);
+  $("#reg-count").textContent = `Angemeldete Sorten (${G.sorts.length})`;
+  const showBaker = LEITUNG || G.phase === "ergebnis";
+  $("#reg-hint").classList.toggle("hidden", showBaker);
+  $("#reg-list").innerHTML = G.sorts.length ? G.sorts.map(s => {
+    const mine = me.mine.includes(s.id);
+    const who = showBaker ? ` <span class="small">von ${esc(s.baecker)}</span>` : mine ? ` <span class="small">(deine)</span>` : "";
+    const del = open && (mine || LEITUNG) ? `<button class="link" data-del="${esc(s.id)}">entfernen</button>` : "";
+    return `<li><span><span class="nr">${s.nr}</span>${esc(s.name)}${who}</span>${del}</li>`;
+  }).join("") : `<li class="small">Noch keine Sorte angemeldet.</li>`;
+}
+$("#reg-list").addEventListener("click", async e => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  const s = G.sorts.find(x => x.id === b.dataset.del);
+  if (!s || !confirm(`„${s.name}“ wirklich entfernen?`)) return;
+  try { await post({ t: "weg", id: s.id }); } catch (err) { alert("Fehlgeschlagen: " + err.message); }
+});
+
+/* ---------- 2. Bewerten ---------- */
+const nameEl = $("#name");
+nameEl.value = me.name || "";
+nameEl.addEventListener("input", () => { me.name = nameEl.value; save(); renderVote(true); });
+const isOwn = s => norm(s.baecker) === norm(nameEl.value) && norm(nameEl.value) !== "";
+const complete = s => K.every((_, k) => me.ratings[s.id]?.[k] != null);
+
+function renderVote(full) {
+  const wait = $("#vote-wait"), open = G.phase === "verkostung";
+  $("#vote-open").classList.toggle("hidden", !open);
+  wait.classList.toggle("hidden", open);
+  if (G.phase === "anmeldung") wait.innerHTML = `<h2>Gleich geht's los …</h2><p class="small" style="margin:0">Die Verkostung hat noch nicht begonnen. Bisher sind ${G.sorts.length} Sorten angemeldet.</p>`;
+  if (G.phase === "ergebnis") wait.innerHTML = `<h2>Abstimmung beendet</h2><p class="small" style="margin:0">Die Platzierungen stehen fest – ab zum Ergebnis! 🏆</p>`;
+  if (!open || !full) return;
+  $("#bakers").innerHTML = [...new Set(G.sorts.map(s => s.baecker))].map(b => `<option value="${esc(b)}">`).join("");
   const n = CONFIG.skalaMax - CONFIG.skalaMin + 1;
-  $("#sorts").innerHTML = CONFIG.sorten.map((s, i) => {
-    const head = `<div class="sort-h"><h2>${esc(s.name)}</h2>
-      <span class="badge ${isOwn(i) ? "" : sortComplete(i) ? "done" : ""}" id="b${i}">${isOwn(i) ? "eigene" : sortComplete(i) ? "✓ fertig" : "offen"}</span></div>`;
-    if (isOwn(i)) return `<div class="card">${head}<p class="skip">Deine eigene Sorte – wird von dir nicht bewertet.</p></div>`;
-    const crits = CONFIG.kriterien.map((c, k) => {
-      const v = state.ratings[i]?.[k];
+  $("#sorts").innerHTML = G.sorts.map(s => {
+    const own = isOwn(s), done = complete(s);
+    const head = `<div class="sort-h"><h2><span class="nr">${s.nr}</span>${esc(s.name)}</h2>
+      <span class="badge ${!own && done ? "done" : ""}" id="b-${esc(s.id)}">${own ? "eigene" : done ? "✓ fertig" : "offen"}</span></div>`;
+    if (own) return `<div class="card">${head}<p class="skip">Deine eigene Sorte – wird von dir nicht bewertet.</p></div>`;
+    return `<div class="card">${head}${K.map((c, k) => {
+      const v = me.ratings[s.id]?.[k];
       let btns = "";
       for (let x = CONFIG.skalaMin; x <= CONFIG.skalaMax; x++)
-        btns += `<button type="button" data-s="${i}" data-k="${k}" data-v="${x}" class="${v === x ? "on" : v != null && x < v ? "in" : ""}">${x}</button>`;
-      return `<div class="crit"><div class="crit-h"><span><b>${esc(c.name)}</b>${c.hinweis ? " · " + esc(c.hinweis) : ""}</span><span>×${c.gewicht}</span></div>
-        <div class="scale" style="--n:${n}">${btns}</div>
-        <div class="ends"><span>schwach</span><span>top</span></div></div>`;
-    }).join("");
-    return `<div class="card">${head}${crits}</div>`;
+        btns += `<button type="button" data-s="${esc(s.id)}" data-k="${k}" data-v="${x}" class="${v === x ? "on" : v != null && x < v ? "in" : ""}">${x}</button>`;
+      return `<div class="crit"><div class="crit-h"><span><b>${esc(c.name)}</b> · ${esc(c.hinweis)}</span><span>×${c.gewicht}</span></div>
+        <div class="scale" style="--n:${n}">${btns}</div><div class="ends"><span>schwach</span><span>top</span></div></div>`;
+    }).join("")}</div>`;
   }).join("");
 }
 
 $("#sorts").addEventListener("click", e => {
   const b = e.target.closest("button[data-v]"); if (!b) return;
-  const i = +b.dataset.s, k = +b.dataset.k, v = +b.dataset.v;
-  (state.ratings[i] ||= {})[k] = v;
-  save();
-  b.parentElement.querySelectorAll("button").forEach(x => {
-    const xv = +x.dataset.v; x.className = xv === v ? "on" : xv < v ? "in" : "";
-  });
-  const badge = $("#b" + i);
-  if (sortComplete(i)) { badge.textContent = "✓ fertig"; badge.className = "badge done"; }
+  const id = b.dataset.s, k = +b.dataset.k, v = +b.dataset.v;
+  (me.ratings[id] ||= {})[k] = v; save();
+  b.parentElement.querySelectorAll("button").forEach(x => { const xv = +x.dataset.v; x.className = xv === v ? "on" : xv < v ? "in" : ""; });
+  const s = G.sorts.find(x => x.id === id), badge = document.getElementById("b-" + id);
+  if (s && badge && complete(s)) { badge.textContent = "✓ fertig"; badge.className = "badge done"; }
 });
 
-renderSorts();
-
-/* ---------- Abschicken ---------- */
 $("#submit").addEventListener("click", async () => {
-  const msg = $("#submit-msg"); msg.className = "msg";
-  const name = nameEl.value.trim().replace(/\s+/g, " ");
-  if (!name) { msg.className = "msg err"; msg.textContent = "Bitte zuerst deinen Namen eintragen."; nameEl.focus(); return; }
-  const missing = CONFIG.sorten.map((s, i) => i).filter(i => !isOwn(i) && !sortComplete(i));
-  if (missing.length) {
-    msg.className = "msg err";
-    msg.textContent = "Noch nicht vollständig bewertet: " + missing.map(i => CONFIG.sorten[i].name).join(", ");
-    return;
-  }
+  const msg = $("#submit-msg"); msg.className = "msg err";
+  const name = clean(nameEl.value);
+  if (!name) { msg.textContent = "Bitte zuerst deinen Namen eintragen."; nameEl.focus(); return; }
+  const missing = G.sorts.filter(s => !isOwn(s) && !complete(s));
+  if (missing.length) { msg.textContent = "Noch nicht vollständig bewertet: " + missing.map(s => "Nr. " + s.nr).join(", "); return; }
   const ratings = {};
-  CONFIG.sorten.forEach((s, i) => { if (!isOwn(i)) ratings[s.name] = CONFIG.kriterien.map((c, k) => state.ratings[i][k]); });
-  const payload = { v: VERSION, name, ratings, ts: Date.now() };
+  G.sorts.forEach(s => { if (!isOwn(s)) ratings[s.id] = K.map((_, k) => me.ratings[s.id][k]); });
   const btn = $("#submit"); btn.disabled = true; btn.textContent = "Wird gesendet …";
   try {
-    const r = await fetch(API, { method: "POST", body: JSON.stringify(payload) });
-    if (!r.ok) throw new Error("HTTP " + r.status);
+    await post({ t: "stimme", name, ratings });
     msg.className = "msg ok"; msg.textContent = `Danke, ${name}! Deine Bewertung ist gespeichert. 🎄`;
-  } catch (err) {
-    msg.className = "msg err"; msg.textContent = "Senden fehlgeschlagen (" + err.message + "). Internetverbindung prüfen und nochmal versuchen.";
-  } finally { btn.disabled = false; btn.textContent = "Bewertung abschicken"; }
+  } catch (err) { msg.textContent = "Senden fehlgeschlagen (" + err.message + "). Bitte nochmal versuchen."; }
+  btn.disabled = false; btn.textContent = "Bewertung abschicken";
 });
 
-/* ---------- Ergebnis berechnen ---------- */
-async function loadVotes() {
-  const r = await fetch(API + "/json?poll=1&since=all", { cache: "no-store" });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  const latest = new Map();                       // pro Name zählt die letzte Abgabe
-  for (const line of (await r.text()).split("\n")) {
-    if (!line.trim()) continue;
-    let ev, p;
-    try { ev = JSON.parse(line); if (ev.event !== "message") continue; p = JSON.parse(ev.message); } catch (e) { continue; }
-    if (p?.v !== VERSION || typeof p.name !== "string" || !p.name.trim() || typeof p.ratings !== "object") continue;
-    p.ts = ev.time * 1000 || p.ts;
-    const key = normName(p.name);
-    if (!latest.has(key) || latest.get(key).ts <= p.ts) latest.set(key, p);
-  }
-  return [...latest.values()];
+/* ---------- 3. Ergebnis ---------- */
+function progress() {
+  const voted = new Set(G.votes.map(v => norm(v.name)));
+  const bakers = [...new Map(G.sorts.map(s => [norm(s.baecker), s.baecker])).entries()];
+  const open = bakers.filter(([k]) => !voted.has(k)).map(([, n]) => n);
+  return { voted, bakers, open, all: bakers.length > 0 && open.length === 0 };
 }
 
-function compute(votes) {
-  const W = CONFIG.kriterien.reduce((a, c) => a + c.gewicht, 0);
-  const valid = v => Number.isFinite(v) && v >= CONFIG.skalaMin && v <= CONFIG.skalaMax;
-  return CONFIG.sorten.map(s => {
-    const per = [];                                   // gewichteter Schnitt je Bewerter
-    const critSum = CONFIG.kriterien.map(() => 0);
-    for (const vote of votes) {
-      const arr = vote.ratings[s.name];
-      if (!Array.isArray(arr) || arr.length !== CONFIG.kriterien.length || !arr.every(valid)) continue;
-      per.push(arr.reduce((a, x, k) => a + x * CONFIG.kriterien[k].gewicht, 0) / W);
-      arr.forEach((x, k) => critSum[k] += x);
+function compute() {
+  const W = K.reduce((a, c) => a + c.gewicht, 0);
+  const ok = x => Number.isFinite(x) && x >= CONFIG.skalaMin && x <= CONFIG.skalaMax;
+  const res = G.sorts.map(s => {
+    const per = [], cs = K.map(() => 0);
+    for (const v of G.votes) {
+      if (norm(v.name) === norm(s.baecker)) continue;         // eigene Sorte zählt nie
+      const a = v.ratings[s.id];
+      if (!Array.isArray(a) || a.length !== K.length || !a.every(ok)) continue;
+      per.push(a.reduce((t, x, k) => t + x * K[k].gewicht, 0) / W);
+      a.forEach((x, k) => cs[k] += x);
     }
     const n = per.length;
-    return {
-      ...s, n,
-      score: n ? per.reduce((a, b) => a + b, 0) / n : null,
-      crit: critSum.map(x => n ? x / n : null),
-    };
+    return { ...s, n, score: n ? per.reduce((a, b) => a + b, 0) / n : null, crit: cs.map(x => n ? x / n : null) };
   }).sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || b.n - a.n);
+  let place = 0, prev = null;
+  res.forEach((r, i) => { if (r.score == null) return; const s = Math.round(r.score * 100); if (s !== prev) place = i + 1; r.place = place; prev = s; });
+  return res;
 }
 
-function renderResult(votes) {
-  const res = compute(votes);
-  const ranked = res.filter(r => r.n);
+function renderLead() {
+  const box = $("#lead");
+  if (!LEITUNG) return box.classList.add("hidden");
+  box.classList.remove("hidden");
+  const st = ["anmeldung", "verkostung", "ergebnis"], lbl = ["1 Anmeldung", "2 Verkostung", "3 Ergebnis"];
+  const bar = `<div class="phase">${st.map((p, i) => `<span class="${G.phase === p ? "on" : ""}">${lbl[i]}</span>`).join("")}</div>`;
+  let body = "";
+  if (G.phase === "anmeldung") body = `<p class="small">${G.sorts.length} Sorten angemeldet. Mit dem Start wird die Liste geschlossen und alle können bewerten.</p>
+    <button class="btn big" data-phase="verkostung" ${G.sorts.length < 2 ? "disabled" : ""}>▶️ Verkostung starten</button>`;
+  if (G.phase === "verkostung") {
+    const p = progress();
+    body = `<p class="small">${p.all ? "✅ Alle Bäcker haben abgestimmt." : "Noch offen: " + esc(p.open.join(", ") || "–")}</p>
+      <button class="btn big" data-phase="ergebnis" data-all="${p.all ? 1 : 0}">🏆 Platzierungen verkünden</button>
+      <button class="link" data-phase="anmeldung">zurück zur Anmeldung</button>`;
+  }
+  if (G.phase === "ergebnis") body = `<p class="small">Das Ergebnis ist für alle sichtbar.</p><button class="link" data-phase="verkostung">Ergebnis verbergen & Abstimmung wieder öffnen</button>`;
+  box.innerHTML = `<h2>🎩 Leitung</h2>${bar}${body}`;
+}
+$("#lead").addEventListener("click", async e => {
+  const b = e.target.closest("[data-phase]"); if (!b) return;
+  const p = b.dataset.phase;
+  const q = p === "verkostung" && G.phase === "anmeldung" ? "Verkostung starten? Danach können keine Sorten mehr angemeldet werden."
+    : p === "ergebnis" ? (b.dataset.all === "1" ? "Platzierungen jetzt für alle verkünden?" : "Noch haben nicht alle Bäcker abgestimmt. Trotzdem verkünden?")
+    : "Wirklich zurückschalten?";
+  if (!confirm(q)) return;
+  b.disabled = true;
+  try { await post({ t: "phase", p }); } catch (err) { alert("Fehlgeschlagen: " + err.message); b.disabled = false; }
+});
+
+let drumTimer = null;
+function renderResult() {
+  renderLead();
   const box = $("#result");
-  if (!votes.length || !ranked.length) {
-    box.innerHTML = `<div class="card"><h2>Noch keine Bewertungen</h2><p class="small">Sobald jemand abgestimmt hat, erscheint hier die Rangliste.</p></div>`;
+  if (G.phase !== "ergebnis") {
+    const p = progress();
+    const pct = p.bakers.length ? Math.round((p.bakers.length - p.open.length) / p.bakers.length * 100) : 0;
+    const others = G.votes.filter(v => !p.bakers.some(([k]) => k === norm(v.name)));
+    box.innerHTML = `<div class="card"><h2>${G.phase === "anmeldung" ? "Die Verkostung hat noch nicht begonnen" : "Abstimmung läuft …"}</h2>
+      ${G.phase === "verkostung" ? `<p style="margin:0">${G.votes.length} Bewertung${G.votes.length === 1 ? "" : "en"} abgegeben${p.all ? " – <b>alle Bäcker sind fertig!</b>" : ""}</p>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      <p class="small" style="margin:12px 0 0">Bäcker</p>
+      <div class="chips">${p.bakers.map(([k, n]) => `<span class="${p.voted.has(k) ? "ok" : ""}">${p.voted.has(k) ? "✓ " : ""}${esc(n)}</span>`).join("")}</div>
+      ${others.length ? `<p class="small" style="margin:12px 0 0">Weitere Bewerter</p><div class="chips">${others.map(v => `<span class="ok">✓ ${esc(v.name)}</span>`).join("")}</div>` : ""}` : ""}
+      <p class="small" style="margin:12px 0 0">Die Platzierungen erscheinen hier, sobald die Leitung sie verkündet. 🤫</p></div>`;
     return;
   }
-  // Platzierung mit Gleichstand
-  let place = 0, prev = null;
-  ranked.forEach((r, i) => { const s = Math.round(r.score * 100); if (s !== prev) place = i + 1; r.place = place; prev = s; });
-  const winners = ranked.filter(r => r.place === 1);
-  const pod = [ranked[1], ranked[0], ranked[2]];
-  const cls = ["p2", "p1", "p3"], medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
-  const podium = pod.map((r, j) => r
-    ? `<div class="pod ${cls[j]}"><b>${medal[r.place] || r.place + "."}</b><span class="n">${esc(r.name)}</span><span class="s">${fmt(r.score)}</span></div>`
-    : `<div></div>`).join("");
+  if (me.seen !== G.revealId) {                       // Trommelwirbel beim ersten Anzeigen
+    if (drumTimer) return;
+    box.innerHTML = `<div class="card drum"><span class="e">🥁</span>Und der Sieger ist …</div>`;
+    drumTimer = setTimeout(() => { me.seen = G.revealId; save(); drumTimer = null; renderResult(); }, 3000);
+    return;
+  }
+  const res = compute(), ranked = res.filter(r => r.score != null);
+  if (!ranked.length) { box.innerHTML = `<div class="card"><h2>Keine gültigen Bewertungen</h2></div>`; return; }
+  const winners = ranked.filter(r => r.place === 1), medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const pod = [ranked[1], ranked[0], ranked[2]], cls = ["p2", "p1", "p3"];
+  const podium = pod.map((r, j) => r ? `<div class="pod ${cls[j]}"><b>${medal[r.place] || r.place + "."}</b>
+    <span class="n">${esc(r.name)}</span><span class="s">${esc(r.baecker)}</span><span class="s">${fmt(r.score)}</span></div>` : `<div></div>`).join("");
   const max = CONFIG.skalaMax;
   const rows = res.map(r => `<tr><td class="num">${r.place ? r.place + "." : "–"}</td>
-      <td><b>${esc(r.name)}</b>${r.baecker ? `<br><span class="small">von ${esc(r.baecker)}</span>` : ""}
-      ${r.score != null ? `<div class="bar"><i style="width:${(r.score / max) * 100}%"></i></div>` : ""}</td>
-      <td class="num"><b>${r.score != null ? fmt(r.score) : "–"}</b><br><span class="small">${r.n} Stimme${r.n === 1 ? "" : "n"}</span></td></tr>`).join("");
-  const critHead = CONFIG.kriterien.map(c => `<th class="num">${esc(c.name)}</th>`).join("");
-  const critRows = res.map(r => `<tr><td>${esc(r.name)}</td>${r.crit.map(x => `<td class="num">${x != null ? fmt(x) : "–"}</td>`).join("")}</tr>`).join("");
-  const critBest = CONFIG.kriterien.map((c, k) => {
-    const best = res.filter(r => r.crit[k] != null).sort((a, b) => b.crit[k] - a.crit[k])[0];
-    return best ? `<span>${esc(c.name)}: <b>${esc(best.name)}</b></span>` : "";
+    <td><b>${esc(r.name)}</b><br><span class="small">von ${esc(r.baecker)}</span>
+    ${r.score != null ? `<div class="bar"><i style="width:${r.score / max * 100}%"></i></div>` : ""}</td>
+    <td class="num"><b>${r.score != null ? fmt(r.score) : "–"}</b><br><span class="small">${r.n} Stimme${r.n === 1 ? "" : "n"}</span></td></tr>`).join("");
+  const best = K.map((c, k) => {
+    const b = res.filter(r => r.crit[k] != null).sort((x, y) => y.crit[k] - x.crit[k])[0];
+    return b ? `<span>${esc(c.name)}: <b>${esc(b.name)}</b></span>` : "";
   }).join("");
-
   box.innerHTML = `
-    <div class="card">
-      <div class="podium">${podium}</div>
-      <p class="winner">${winners.length > 1 ? "Gleichstand! Sieger: " : "Sieger: "}<b>${winners.map(w => esc(w.name)).join(" & ")}</b> 🎉</p>
-    </div>
-    <div class="card"><h2>Rangliste</h2>
-      <table><thead><tr><th class="num">#</th><th>Sorte</th><th class="num">Punkte (Ø, max. ${max})</th></tr></thead><tbody>${rows}</tbody></table>
-    </div>
-    <div class="card"><h2>Bestnoten je Kriterium</h2><div class="chips">${critBest}</div>
-      <div class="scroll" style="margin-top:12px"><table><thead><tr><th>Sorte</th>${critHead}</tr></thead><tbody>${critRows}</tbody></table></div>
-      <p class="small">Gesamtpunkte = gewichteter Durchschnitt (${CONFIG.kriterien.map(c => esc(c.name) + " ×" + c.gewicht).join(", ")}), gemittelt über alle Bewerter.</p>
-    </div>
-    <div class="card"><h2>Abgestimmt haben (${votes.length})</h2>
-      <div class="chips">${votes.sort((a, b) => a.name.localeCompare(b.name, "de")).map(v => `<span>${esc(v.name)}</span>`).join("")}</div>
-    </div>`;
+    <div class="card fade"><div class="podium">${podium}</div>
+      <p class="winner">${winners.length > 1 ? "Gleichstand! Sieger: " : "Sieger: "}<b>${winners.map(w => esc(w.name) + " von " + esc(w.baecker)).join(" & ")}</b> 🎉</p></div>
+    <div class="card fade"><h2>Platzierungen</h2>
+      <table><thead><tr><th class="num">#</th><th>Sorte</th><th class="num">Punkte (max. ${max})</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="card fade"><h2>Bestnoten je Kriterium</h2><div class="chips">${best}</div>
+      <div class="scroll" style="margin-top:12px"><table><thead><tr><th>Sorte</th>${K.map(c => `<th class="num">${esc(c.name)}</th>`).join("")}</tr></thead>
+      <tbody>${res.map(r => `<tr><td>${esc(r.name)}</td>${r.crit.map(x => `<td class="num">${x != null ? fmt(x) : "–"}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <p class="small">Punkte = gewichteter Durchschnitt (${K.map(c => esc(c.name) + " ×" + c.gewicht).join(", ")}), gemittelt über alle Bewerter. Die eigene Sorte zählt nie mit.</p></div>
+    <div class="card fade"><h2>Bewertet haben (${G.votes.length})</h2>
+      <div class="chips">${G.votes.map(v => v.name).sort((a, b) => a.localeCompare(b, "de")).map(n => `<span>${esc(n)}</span>`).join("")}</div></div>`;
 }
 
-let timer = null;
-async function refresh() {
-  const meta = $("#result-meta");
-  try {
-    const votes = await loadVotes();
-    renderResult(votes);
-    meta.textContent = "Stand: " + new Date().toLocaleTimeString("de-DE") + " · aktualisiert automatisch alle 15 s";
-  } catch (err) {
-    meta.textContent = "Ergebnisse konnten nicht geladen werden (" + err.message + ").";
-  }
-}
-$("#reload").addEventListener("click", refresh);
-
-/* ---------- Tabs ---------- */
-function show(view) {
-  const vote = view === "vote";
-  $("#view-vote").classList.toggle("hidden", !vote);
-  $("#view-result").classList.toggle("hidden", vote);
-  $("#tab-vote").classList.toggle("on", vote);
-  $("#tab-result").classList.toggle("on", !vote);
-  clearInterval(timer);
-  if (!vote) { refresh(); timer = setInterval(refresh, 15000); }
-  scrollTo(0, 0);
-  history.replaceState(null, "", vote ? location.pathname + location.search : "#ergebnis");
-}
-$("#tab-vote").addEventListener("click", () => show("vote"));
-$("#tab-result").addEventListener("click", () => show("result"));
-if (location.hash === "#ergebnis") show("result");
+/* ---------- Start ---------- */
+sync();
+setInterval(sync, 8000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) sync(); });
 </script>
 </body>
 </html>

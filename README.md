@@ -1,25 +1,43 @@
 # 🍪 Plätzchen-Wettbewerb
 
-Die Teilnehmer bewerten jede Plätzchensorte am Handy nach festgelegten Kriterien.
-`index.html` sammelt die Stimmen und berechnet den Sieger automatisch.
-
-## Einrichten
-1. In `index.html` den Block **KONFIGURATION** anpassen: Sorten, Kriterien mit Gewicht, Skala und `kanal`.
-   Für den `kanal` einen eigenen, schwer erratbaren Namen wählen.
-2. GitHub → *Settings → Pages* → Source: *Deploy from a branch*, Branch wählen, Ordner `/ (root)`.
-3. Den Link (z. B. als QR-Code) an alle verteilen.
+Webseite für einen Plätzchenbackwettbewerb, komplett am Handy.
 
 ## Ablauf
-- **Bewerten:** Namen eintragen, optional die eigene Sorte wählen (die bewertet man dann nicht), alle Kriterien antippen, abschicken.
-  Man kann erneut abschicken. Es zählt immer die letzte Abgabe pro Name.
-- **Ergebnis:** Siegertreppchen, Rangliste, Durchschnitt je Kriterium und wer schon abgestimmt hat. Aktualisiert sich alle 15 s.
+1. **Anmelden** (Tab „Anmelden“): Jeder Bäcker trägt Namen und Sorte ein. Mehrere Sorten pro Person sind möglich.
+   Eigene Einträge lassen sich wieder entfernen. Die Sorten bekommen Nummern (zum Beschriften der Teller).
+   Die Bäcker bleiben bis zur Siegerehrung geheim.
+2. **Verkostung starten** (Leitung): schließt die Anmeldung. Alle Handys springen zu „Bewerten“.
+3. **Bewerten:** Namen eintragen und jede Sorte nach 5 Kriterien von 1 bis 10 bewerten.
+   Wer mit dem Namen seiner Anmeldung bewertet, bewertet die eigene Sorte nicht.
+   Man kann bis zur Verkündung nachbessern. Es zählt die letzte Abgabe.
+4. **Platzierungen verkünden** (Leitung): Die Leitung sieht, welche Bäcker schon abgestimmt haben.
+   Ein Druck auf den Knopf zeigt auf allen Handys nach einem Trommelwirbel das Siegertreppchen und die Rangliste.
 
-## Berechnung
-Pro Bewerter und Sorte: gewichteter Durchschnitt der Kriterien.
-Gesamtpunkte einer Sorte: Mittelwert über alle Bewerter.
-Bei gleicher Punktzahl entscheidet die Anzahl der Stimmen.
+## Leitungs-Ansicht
+Die Seite mit `?leitung` aufrufen, z. B. `https://<user>.github.io/<repo>/?leitung`.
+Nur dort gibt es die Knöpfe zum Starten und Verkünden (inklusive Zurückschalten bei Fehlern).
+Diesen Link nicht weitergeben.
+
+## Bewertung
+| Kriterium    | Gewicht | Frage |
+|--------------|:------:|-------|
+| Geschmack    | 4 | Wie lecker ist es? |
+| Textur       | 2 | Mürbe, saftig, knusprig – passt es? |
+| Nachschlag   | 2 | Würdest du sofort noch eins nehmen? |
+| Aussehen     | 1 | Form, Farbe, Verzierung |
+| Originalität | 1 | Besondere Idee oder Note? |
+
+Pro Bewerter und Sorte wird der gewichtete Durchschnitt gebildet, dann über alle Bewerter gemittelt (max. 10 Punkte).
+Bei gleicher Punktzahl teilen sich die Sorten den Platz.
+Anpassbar im Block `KONFIGURATION` in `index.html`.
+
+## Einrichten
+1. GitHub → *Settings → Pages* → *Deploy from a branch* → Branch und Ordner `/ (root)` wählen.
+2. In `index.html` bei `kanal` einen eigenen, schwer erratbaren Namen eintragen
+   (oder den Link mit `?kanal=meinname` bzw. `?kanal=meinname&leitung` verwenden).
+3. Link als QR-Code verteilen.
 
 ## Speicherung
-Die Stimmen gehen an den kostenlosen Dienst [ntfy.sh](https://ntfy.sh) (ohne Anmeldung) und bleiben dort **ca. 12 Stunden** gespeichert.
-Wer den Kanalnamen kennt, kann mitlesen und auch Stimmen abgeben.
-Für einen neuen Wettbewerb einfach einen neuen Kanal nehmen oder den Link mit `?kanal=neuername` verwenden.
+Die Daten liegen beim kostenlosen Dienst [ntfy.sh](https://ntfy.sh) (ohne Anmeldung), und zwar nur **ca. 12 Stunden**.
+Deshalb am Tag des Wettbewerbs anmelden.
+Für jeden neuen Wettbewerb einen neuen Kanalnamen verwenden.
