@@ -2,6 +2,9 @@
 
 Webseite für einen Plätzchenbackwettbewerb, komplett am Handy.
 
+- **Für alle:** https://fammarek.github.io/plaetzchen/
+- **Leitung:** https://fammarek.github.io/plaetzchen/?leitung
+
 ## Ablauf
 1. **Anmelden** (Tab „Anmelden“): Jeder Bäcker trägt Namen und Sorte ein. Mehrere Sorten pro Person sind möglich.
    Eigene Einträge lassen sich wieder entfernen. Die Sorten bekommen Nummern (zum Beschriften der Teller).
@@ -14,7 +17,7 @@ Webseite für einen Plätzchenbackwettbewerb, komplett am Handy.
    Ein Druck auf den Knopf zeigt auf allen Handys nach einem Trommelwirbel das Siegertreppchen und die Rangliste.
 
 ## Leitungs-Ansicht
-Die Seite mit `?leitung` aufrufen, z. B. `https://<user>.github.io/<repo>/?leitung`.
+Die Seite mit `?leitung` aufrufen, also https://fammarek.github.io/plaetzchen/?leitung.
 Nur dort gibt es die Knöpfe zum Starten und Verkünden (inklusive Zurückschalten bei Fehlern).
 Diesen Link nicht weitergeben.
 
