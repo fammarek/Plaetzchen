@@ -222,13 +222,15 @@ async function sync() {
     $("#net").classList.remove("hidden");
     return;
   }
-  let phase = "anmeldung", revealId = "", seq = 0;
+  let phase = "anmeldung", revealId = "", resetId = "", seq = 0;
   const sorts = new Map(), votes = new Map();
   for (const line of text.split("\n")) {
     let ev, p;
     try { ev = JSON.parse(line); if (ev.event !== "message") continue; p = JSON.parse(ev.message); } catch (e) { continue; }
     if (!p || p.v !== V) continue;
-    if (p.t === "phase" && ["anmeldung", "verkostung", "ergebnis"].includes(p.p)) {
+    if (p.t === "reset") {                          // Leitung: alles löschen
+      phase = "anmeldung"; revealId = ""; resetId = ev.id; sorts.clear(); votes.clear(); seq = 0;
+    } else if (p.t === "phase" && ["anmeldung", "verkostung", "ergebnis"].includes(p.p)) {
       phase = p.p; if (phase === "ergebnis") revealId = ev.id;
     } else if (p.t === "sorte" && phase === "anmeldung" && p.id && clean(p.name) && clean(p.baecker)) {
       const old = sorts.get(p.id);
@@ -244,8 +246,13 @@ async function sync() {
   const sig = JSON.stringify([phase, list.map(s => [s.id, s.name, s.baecker])]);
   const changed = sig !== G.sig;
   const first = !G.loaded, phaseChanged = G.loaded && G.phase !== phase;
+  const wasReset = (me.resetId || "") !== resetId;
+  if (wasReset) {                                    // lokale Daten dieses Handys verwerfen
+    me.resetId = resetId; me.ratings = {}; me.mine = []; me.seen = ""; save();
+    ["#reg-msg", "#submit-msg"].forEach(x => $(x).textContent = "");
+  }
   G = { phase, sorts: list, votes: [...votes.values()], revealId, loaded: true, sig };
-  if (first || phaseChanged) show(LEITUNG || phase === "ergebnis" ? "result" : phase === "anmeldung" ? "reg" : "vote");
+  if (first || phaseChanged || wasReset) show(LEITUNG || phase === "ergebnis" ? "result" : phase === "anmeldung" ? "reg" : "vote");
   else render(changed);
 }
 
@@ -408,9 +415,17 @@ function renderLead() {
       <button class="link" data-phase="anmeldung">zurück zur Anmeldung</button>`;
   }
   if (G.phase === "ergebnis") body = `<p class="small">Das Ergebnis ist für alle sichtbar.</p><button class="link" data-phase="verkostung">Ergebnis verbergen & Abstimmung wieder öffnen</button>`;
-  box.innerHTML = `<h2>🎩 Leitung</h2>${bar}${body}`;
+  box.innerHTML = `<h2>🎩 Leitung</h2>${bar}${body}
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:10px">
+      <button class="link" data-reset>🔄 Alles zurücksetzen (Sorten, Bewertungen, Ergebnis löschen)</button></div>`;
 }
 $("#lead").addEventListener("click", async e => {
+  if (e.target.closest("[data-reset]")) {
+    if (!confirm("Wirklich ALLES zurücksetzen? Alle Sorten, Bewertungen und das Ergebnis werden gelöscht.")) return;
+    if (prompt('Zur Sicherheit bitte RESET eintippen:') !== "RESET") return;
+    try { await post({ t: "reset" }); } catch (err) { alert("Fehlgeschlagen: " + err.message); }
+    return;
+  }
   const b = e.target.closest("[data-phase]"); if (!b) return;
   const p = b.dataset.phase;
   const q = p === "verkostung" && G.phase === "anmeldung" ? "Verkostung starten? Danach können keine Sorten mehr angemeldet werden."

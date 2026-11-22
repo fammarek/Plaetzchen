@@ -18,7 +18,7 @@ Webseite für einen Plätzchenbackwettbewerb, komplett am Handy.
 
 ## Leitungs-Ansicht
 Die Seite mit `?leitung` aufrufen, also https://fammarek.github.io/Plaetzchen/?leitung.
-Nur dort gibt es die Knöpfe zum Starten und Verkünden (inklusive Zurückschalten bei Fehlern).
+Nur dort gibt es die Knöpfe zum Starten und Verkünden (inklusive Zurückschalten bei Fehlern) sowie „Alles zurücksetzen“ (löscht Sorten, Bewertungen und Ergebnis auf allen Handys – ideal nach einem Probelauf).
 Diesen Link nicht weitergeben.
 
 ## Bewertung
