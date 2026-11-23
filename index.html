@@ -116,9 +116,18 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
         <p class="msg" id="reg-msg"></p>
       </div>
     </div>
-    <div class="card hidden" id="reg-closed"><h2>Anmeldung geschlossen</h2><p class="small" style="margin:0">Die Verkostung läuft bereits.</p></div>
+    <div class="card hidden" id="reg-closed"><h2>Sorten-Anmeldung geschlossen</h2><p class="small" style="margin:0">Die Verkostung läuft bereits.</p></div>
+    <div class="card" id="guest-open">
+      <h2>Keine Plätzchen dabei? Mitverkosten!</h2>
+      <p class="small" style="margin:0 0 10px">Auch ohne eigene Plätzchen darfst du alle Sorten bewerten. Trag dich hier ein, damit die Leitung weiß, dass du mitmachst.</p>
+      <label class="f" for="guest-name">Dein Name</label>
+      <input type="text" id="guest-name" maxlength="40" placeholder="z. B. Onkel Fritz" autocomplete="given-name">
+      <button class="btn sec" id="guest-btn">Als Verkoster anmelden</button>
+      <p class="msg" id="guest-msg"></p>
+    </div>
     <div class="card"><h2 id="reg-count">Angemeldete Sorten</h2><ul class="list" id="reg-list"></ul>
       <p class="small" id="reg-hint">Die Bäcker bleiben bis zur Siegerehrung geheim (Blindverkostung).</p></div>
+    <div class="card"><h2 id="guest-count">Verkoster ohne Plätzchen</h2><ul class="list" id="guest-list"></ul></div>
   </section>
 
   <!-- ============ BEWERTEN ============ -->
@@ -129,7 +138,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
         <label class="f" for="name">Dein Name</label>
         <input type="text" id="name" list="bakers" maxlength="40" placeholder="z. B. Oma Hilde" autocomplete="given-name" style="margin:0">
         <datalist id="bakers"></datalist>
-        <p class="small" id="name-hint" style="margin:6px 0 0">Bäcker: Bitte genau den Namen der Anmeldung verwenden, dann wird die eigene Sorte übersprungen.</p>
+        <p class="small" id="name-hint" style="margin:6px 0 0">Bitte denselben Namen wie bei der Anmeldung verwenden. Bäcker bewerten ihre eigene Sorte nicht. Wer keine Plätzchen mitgebracht hat, bewertet alle.</p>
       </div>
       <div id="sorts"></div>
       <button class="btn" id="submit">Bewertung abschicken</button>
@@ -202,7 +211,7 @@ const save = () => { try { localStorage.setItem(LS, JSON.stringify(me)); } catch
 
 /* ---------- gemeinsamer Zustand aus dem Kanal ---------- */
 // Nachrichten: {t:"sorte",id,name,baecker} {t:"weg",id} {t:"phase",p} {t:"stimme",name,ratings:{id:[..]}}
-let G = { phase: "anmeldung", sorts: [], votes: [], revealId: "", loaded: false };
+let G = { phase: "anmeldung", sorts: [], guests: [], votes: [], revealId: "", loaded: false };
 
 async function post(p) {
   const r = await fetch(API, { method: "POST", body: JSON.stringify({ v: V, ...p }) });
@@ -223,18 +232,22 @@ async function sync() {
     return;
   }
   let phase = "anmeldung", revealId = "", resetId = "", seq = 0;
-  const sorts = new Map(), votes = new Map();
+  const sorts = new Map(), votes = new Map(), guests = new Map();
   for (const line of text.split("\n")) {
     let ev, p;
     try { ev = JSON.parse(line); if (ev.event !== "message") continue; p = JSON.parse(ev.message); } catch (e) { continue; }
     if (!p || p.v !== V) continue;
     if (p.t === "reset") {                          // Leitung: alles löschen
-      phase = "anmeldung"; revealId = ""; resetId = ev.id; sorts.clear(); votes.clear(); seq = 0;
+      phase = "anmeldung"; revealId = ""; resetId = ev.id; sorts.clear(); votes.clear(); guests.clear(); seq = 0;
     } else if (p.t === "phase" && ["anmeldung", "verkostung", "ergebnis"].includes(p.p)) {
       phase = p.p; if (phase === "ergebnis") revealId = ev.id;
     } else if (p.t === "sorte" && phase === "anmeldung" && p.id && clean(p.name) && clean(p.baecker)) {
       const old = sorts.get(p.id);
       sorts.set(p.id, { id: String(p.id), name: clean(p.name), baecker: clean(p.baecker), order: old ? old.order : ++seq });
+    } else if (p.t === "gast" && phase !== "ergebnis" && clean(p.name)) {
+      guests.set(norm(p.name), clean(p.name));
+    } else if (p.t === "gast_weg" && phase !== "ergebnis") {
+      guests.delete(norm(p.name));
     } else if (p.t === "weg" && phase === "anmeldung") {
       sorts.delete(p.id);
     } else if (p.t === "stimme" && phase === "verkostung" && clean(p.name) && p.ratings && typeof p.ratings === "object") {
@@ -243,15 +256,16 @@ async function sync() {
   }
   const list = [...sorts.values()].sort((a, b) => a.order - b.order);
   list.forEach((s, i) => s.nr = i + 1);
-  const sig = JSON.stringify([phase, list.map(s => [s.id, s.name, s.baecker])]);
+  const guestList = [...guests.values()].sort((a, b) => a.localeCompare(b, "de"));
+  const sig = JSON.stringify([phase, list.map(s => [s.id, s.name, s.baecker]), guestList]);
   const changed = sig !== G.sig;
   const first = !G.loaded, phaseChanged = G.loaded && G.phase !== phase;
   const wasReset = (me.resetId || "") !== resetId;
   if (wasReset) {                                    // lokale Daten dieses Handys verwerfen
     me.resetId = resetId; me.ratings = {}; me.mine = []; me.seen = ""; save();
-    ["#reg-msg", "#submit-msg"].forEach(x => $(x).textContent = "");
+    ["#reg-msg", "#submit-msg", "#guest-msg"].forEach(x => $(x).textContent = "");
   }
-  G = { phase, sorts: list, votes: [...votes.values()], revealId, loaded: true, sig };
+  G = { phase, sorts: list, guests: guestList, votes: [...votes.values()], revealId, loaded: true, sig };
   if (first || phaseChanged || wasReset) show(LEITUNG || phase === "ergebnis" ? "result" : phase === "anmeldung" ? "reg" : "vote");
   else render(changed);
 }
@@ -293,8 +307,35 @@ $("#reg-btn").addEventListener("click", async () => {
   btn.disabled = false;
 });
 
+$("#guest-name").value = me.name || "";
+$("#guest-btn").addEventListener("click", async () => {
+  const name = clean($("#guest-name").value), msg = $("#guest-msg");
+  msg.className = "msg err";
+  if (!name) { msg.textContent = "Bitte deinen Namen eintragen."; return; }
+  if (G.sorts.some(s => norm(s.baecker) === norm(name))) { msg.className = "msg ok"; msg.textContent = "Du bist schon als Bäcker angemeldet – du kannst ganz normal bewerten."; return; }
+  if (G.guests.some(g => norm(g) === norm(name))) { msg.className = "msg ok"; msg.textContent = "Du bist schon als Verkoster angemeldet."; return; }
+  const btn = $("#guest-btn"); btn.disabled = true;
+  try {
+    me.name = name; save(); nameEl.value = name;
+    await post({ t: "gast", name });
+    msg.className = "msg ok"; msg.textContent = `Willkommen, ${name}! Du bewertest alle Sorten. 🍪`;
+  } catch (err) { msg.textContent = "Fehlgeschlagen (" + err.message + "). Bitte nochmal versuchen."; }
+  btn.disabled = false;
+});
+$("#guest-list").addEventListener("click", async e => {
+  const b = e.target.closest("[data-gdel]"); if (!b) return;
+  if (!confirm(`„${b.dataset.gdel}“ wirklich als Verkoster entfernen?`)) return;
+  try { await post({ t: "gast_weg", name: b.dataset.gdel }); } catch (err) { alert("Fehlgeschlagen: " + err.message); }
+});
+
 function renderReg() {
   const open = G.phase === "anmeldung";
+  $("#guest-open").classList.toggle("hidden", G.phase === "ergebnis");
+  $("#guest-count").textContent = `Verkoster ohne Plätzchen (${G.guests.length})`;
+  $("#guest-list").innerHTML = G.guests.length ? G.guests.map(g => {
+    const del = G.phase !== "ergebnis" && (LEITUNG || norm(g) === norm(me.name)) ? `<button class="link" data-gdel="${esc(g)}">entfernen</button>` : "";
+    return `<li><span>${esc(g)}</span>${del}</li>`;
+  }).join("") : `<li class="small">Noch niemand.</li>`;
   $("#reg-open").classList.toggle("hidden", !open);
   $("#reg-closed").classList.toggle("hidden", open);
   $("#reg-count").textContent = `Angemeldete Sorten (${G.sorts.length})`;
@@ -328,7 +369,7 @@ function renderVote(full) {
   if (G.phase === "anmeldung") wait.innerHTML = `<h2>Gleich geht's los …</h2><p class="small" style="margin:0">Die Verkostung hat noch nicht begonnen. Bisher sind ${G.sorts.length} Sorten angemeldet.</p>`;
   if (G.phase === "ergebnis") wait.innerHTML = `<h2>Abstimmung beendet</h2><p class="small" style="margin:0">Die Platzierungen stehen fest – ab zum Ergebnis! 🏆</p>`;
   if (!open || !full) return;
-  $("#bakers").innerHTML = [...new Set(G.sorts.map(s => s.baecker))].map(b => `<option value="${esc(b)}">`).join("");
+  $("#bakers").innerHTML = [...new Set([...G.sorts.map(s => s.baecker), ...G.guests])].map(b => `<option value="${esc(b)}">`).join("");
   const n = CONFIG.skalaMax - CONFIG.skalaMin + 1;
   $("#sorts").innerHTML = G.sorts.map(s => {
     const own = isOwn(s), done = complete(s);
@@ -375,8 +416,10 @@ $("#submit").addEventListener("click", async () => {
 function progress() {
   const voted = new Set(G.votes.map(v => norm(v.name)));
   const bakers = [...new Map(G.sorts.map(s => [norm(s.baecker), s.baecker])).entries()];
-  const open = bakers.filter(([k]) => !voted.has(k)).map(([, n]) => n);
-  return { voted, bakers, open, all: bakers.length > 0 && open.length === 0 };
+  const guests = G.guests.filter(g => !bakers.some(([k]) => k === norm(g))).map(g => [norm(g), g]);
+  const people = [...bakers, ...guests];
+  const open = people.filter(([k]) => !voted.has(k)).map(([, n]) => n);
+  return { voted, bakers, guests, people, open, all: people.length > 0 && open.length === 0 };
 }
 
 function compute() {
@@ -406,11 +449,11 @@ function renderLead() {
   const st = ["anmeldung", "verkostung", "ergebnis"], lbl = ["1 Anmeldung", "2 Verkostung", "3 Ergebnis"];
   const bar = `<div class="phase">${st.map((p, i) => `<span class="${G.phase === p ? "on" : ""}">${lbl[i]}</span>`).join("")}</div>`;
   let body = "";
-  if (G.phase === "anmeldung") body = `<p class="small">${G.sorts.length} Sorten angemeldet. Mit dem Start wird die Liste geschlossen und alle können bewerten.</p>
+  if (G.phase === "anmeldung") body = `<p class="small">${G.sorts.length} Sorten, ${progress().people.length} Teilnehmer (davon ${progress().guests.length} ohne Plätzchen). Mit dem Start wird die Liste geschlossen und alle können bewerten.</p>
     <button class="btn big" data-phase="verkostung" ${G.sorts.length < 2 ? "disabled" : ""}>▶️ Verkostung starten</button>`;
   if (G.phase === "verkostung") {
     const p = progress();
-    body = `<p class="small">${p.all ? "✅ Alle Bäcker haben abgestimmt." : "Noch offen: " + esc(p.open.join(", ") || "–")}</p>
+    body = `<p class="small">${p.all ? "✅ Alle Teilnehmer haben abgestimmt." : "Noch offen: " + esc(p.open.join(", ") || "–")}</p>
       <button class="btn big" data-phase="ergebnis" data-all="${p.all ? 1 : 0}">🏆 Platzierungen verkünden</button>
       <button class="link" data-phase="anmeldung">zurück zur Anmeldung</button>`;
   }
@@ -429,7 +472,7 @@ $("#lead").addEventListener("click", async e => {
   const b = e.target.closest("[data-phase]"); if (!b) return;
   const p = b.dataset.phase;
   const q = p === "verkostung" && G.phase === "anmeldung" ? "Verkostung starten? Danach können keine Sorten mehr angemeldet werden."
-    : p === "ergebnis" ? (b.dataset.all === "1" ? "Platzierungen jetzt für alle verkünden?" : "Noch haben nicht alle Bäcker abgestimmt. Trotzdem verkünden?")
+    : p === "ergebnis" ? (b.dataset.all === "1" ? "Platzierungen jetzt für alle verkünden?" : "Noch haben nicht alle Teilnehmer abgestimmt. Trotzdem verkünden?")
     : "Wirklich zurückschalten?";
   if (!confirm(q)) return;
   b.disabled = true;
@@ -442,14 +485,15 @@ function renderResult() {
   const box = $("#result");
   if (G.phase !== "ergebnis") {
     const p = progress();
-    const pct = p.bakers.length ? Math.round((p.bakers.length - p.open.length) / p.bakers.length * 100) : 0;
-    const others = G.votes.filter(v => !p.bakers.some(([k]) => k === norm(v.name)));
+    const pct = p.people.length ? Math.round((p.people.length - p.open.length) / p.people.length * 100) : 0;
+    const others = G.votes.filter(v => !p.people.some(([k]) => k === norm(v.name)));
+    const chips = list => `<div class="chips">${list.map(([k, n]) => `<span class="${p.voted.has(k) ? "ok" : ""}">${p.voted.has(k) ? "✓ " : ""}${esc(n)}</span>`).join("")}</div>`;
     box.innerHTML = `<div class="card"><h2>${G.phase === "anmeldung" ? "Die Verkostung hat noch nicht begonnen" : "Abstimmung läuft …"}</h2>
-      ${G.phase === "verkostung" ? `<p style="margin:0">${G.votes.length} Bewertung${G.votes.length === 1 ? "" : "en"} abgegeben${p.all ? " – <b>alle Bäcker sind fertig!</b>" : ""}</p>
+      ${G.phase === "verkostung" ? `<p style="margin:0">${G.votes.length} Bewertung${G.votes.length === 1 ? "" : "en"} abgegeben${p.all ? " – <b>alle sind fertig!</b>" : ""}</p>
       <div class="progress"><i style="width:${pct}%"></i></div>
-      <p class="small" style="margin:12px 0 0">Bäcker</p>
-      <div class="chips">${p.bakers.map(([k, n]) => `<span class="${p.voted.has(k) ? "ok" : ""}">${p.voted.has(k) ? "✓ " : ""}${esc(n)}</span>`).join("")}</div>
-      ${others.length ? `<p class="small" style="margin:12px 0 0">Weitere Bewerter</p><div class="chips">${others.map(v => `<span class="ok">✓ ${esc(v.name)}</span>`).join("")}</div>` : ""}` : ""}
+      <p class="small" style="margin:12px 0 0">Bäcker</p>${chips(p.bakers)}
+      ${p.guests.length ? `<p class="small" style="margin:12px 0 0">Verkoster ohne Plätzchen</p>${chips(p.guests)}` : ""}
+      ${others.length ? `<p class="small" style="margin:12px 0 0">Spontan dazugekommen</p><div class="chips">${others.map(v => `<span class="ok">✓ ${esc(v.name)}</span>`).join("")}</div>` : ""}` : ""}
       <p class="small" style="margin:12px 0 0">Die Platzierungen erscheinen hier, sobald die Leitung sie verkündet. 🤫</p></div>`;
     return;
   }

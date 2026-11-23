@@ -9,11 +9,13 @@ Webseite für einen Plätzchenbackwettbewerb, komplett am Handy.
 1. **Anmelden** (Tab „Anmelden“): Jeder Bäcker trägt Namen und Sorte ein. Mehrere Sorten pro Person sind möglich.
    Eigene Einträge lassen sich wieder entfernen. Die Sorten bekommen Nummern (zum Beschriften der Teller).
    Die Bäcker bleiben bis zur Siegerehrung geheim.
+   **Ohne Plätzchen dabei?** Im selben Tab unter „Mitverkosten“ als Verkoster eintragen (geht auch noch während der Verkostung).
+   Verkoster bewerten alle Sorten. Auch ganz ohne Anmeldung kann jeder spontan mitbewerten.
 2. **Verkostung starten** (Leitung): schließt die Anmeldung. Alle Handys springen zu „Bewerten“.
 3. **Bewerten:** Namen eintragen und jede Sorte nach 5 Kriterien von 1 bis 10 bewerten.
    Wer mit dem Namen seiner Anmeldung bewertet, bewertet die eigene Sorte nicht.
    Man kann bis zur Verkündung nachbessern. Es zählt die letzte Abgabe.
-4. **Platzierungen verkünden** (Leitung): Die Leitung sieht, welche Bäcker schon abgestimmt haben.
+4. **Platzierungen verkünden** (Leitung): Die Leitung sieht, welche angemeldeten Teilnehmer (Bäcker und Verkoster) schon abgestimmt haben.
    Ein Druck auf den Knopf zeigt auf allen Handys nach einem Trommelwirbel das Siegertreppchen und die Rangliste.
 
 ## Leitungs-Ansicht
