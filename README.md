@@ -26,11 +26,11 @@ Diesen Link nicht weitergeben.
 |--------------|:------:|-------|
 | Geschmack    | 4 | Wie lecker ist es? |
 | Textur       | 2 | Mürbe, saftig, knusprig – passt es? |
-| Nachschlag   | 2 | Würdest du sofort noch eins nehmen? |
+| Backkunst    | 2 | Schwierigkeitsgrad & saubere Arbeit – wie aufwendig? |
+| Originalität | 2 | Besondere Idee oder Note? |
 | Aussehen     | 1 | Form, Farbe, Verzierung |
-| Originalität | 1 | Besondere Idee oder Note? |
 
-Pro Bewerter und Sorte wird der gewichtete Durchschnitt gebildet, dann über alle Bewerter gemittelt (max. 10 Punkte).
+Pro Bewerter und Sorte wird der gewichtete Durchschnitt gebildet, dann über alle Bewerter gemittelt (max. 10 Punkte; Summe der Gewichte = 11).
 Bei gleicher Punktzahl teilen sich die Sorten den Platz.
 Anpassbar im Block `KONFIGURATION` in `index.html`.
 
